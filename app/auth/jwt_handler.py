@@ -1,0 +1,30 @@
+# Thisfile is responsible for signing,encoding,decoding and returning JWTs
+
+import time   #for jwt expiry
+import jwt
+from decouple import config #for configuring parameters to store in .env file and helps while deployment
+
+JWT_SECRET = config("secret")
+JWT_ALGORITHM = config("algorithm")
+
+#Function returns the generated Token(JWTs)
+def token_response(token:str):
+    return {
+        "access token": token
+    }
+    
+#Function used for signing the JWT string
+def signJWT(userID :str):
+    payload = {
+        "userID" : userID,
+        "expiry" : time.time() + 600 #millisecs
+    }
+    token = jwt.encode(payload,JWT_SECRET,algorithm=JWT_ALGORITHM)
+    return token_response(token)
+
+def decodeJWT(token:str):
+    try:
+        decode_token = jwt.decode(token,JWT_SECRET,algorithm=JWT_ALGORITHM)
+        return decode_token if decode_token['expires'] >= time.time() else None
+    except:
+        return {}
